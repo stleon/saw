@@ -27,9 +27,7 @@ TEMPLATE_DEBUG = DEBUG
 ALLOWED_HOSTS = ['127.0.0.1']
 INTERNAL_IPS = ('127.0.0.1',)
 
-ADMINS = (
-     ('stleon', 'leonst998@gmail.com'),
-)
+ADMINS = (('stleon', 'leonst998@gmail.com'),)
 
 # Application definition
 
