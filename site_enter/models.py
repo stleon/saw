@@ -4,7 +4,7 @@ from django.db import models
 
 class Site(models.Model):
 	site = models.CharField('Site', max_length=255, unique=True)
-	active = models.BooleanField('Active?')
+	active = models.BooleanField('Active?', default=True)
 	date_created = models.DateTimeField('Created', auto_now_add=True, auto_now=False,)
 	date_updated = models.DateTimeField('Updated', auto_now_add=False, auto_now=True,)
 
@@ -14,8 +14,9 @@ class Site(models.Model):
 	class Meta:
 		ordering = ['site']
 
+
 class SiteBaseInformation(models.Model):
-	site = models.ForeignKey(Site, verbose_name="Site", related_name="site_name")
+	site = models.ForeignKey(Site, verbose_name="Site", related_name="base_info")
 	yandex_tyc = models.PositiveIntegerField('Yandex TYC', max_length=6, default=0)
 	google_pr = models.PositiveIntegerField('Google PR', max_length=1, default=0)
 	# TODO check max
@@ -33,6 +34,10 @@ class SiteBaseInformation(models.Model):
 	# TODO safebrowsing ???
 	date_created = models.DateTimeField('Created', auto_now_add=True, auto_now=False,)
 	date_updated = models.DateTimeField('Updated', auto_now_add=False, auto_now=True,)
+
+	@classmethod
+	def create(cls, **kwargs):
+		return cls(**kwargs)
 
 	def __unicode__(self):
 		return self.site.site

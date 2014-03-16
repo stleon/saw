@@ -29,6 +29,26 @@
         <p>{{ form.site.help_text }}</p>
         <button type="submit">Отправить</button>
     </form>
+    {% if site %}
+        <h1>Site</h1>
+         {{ site }}
+        {% for i in site.base_info.all %}
+            {{ i.google_pr }}
+        {% endfor %}
+        {% if two_weeks %}
+            <h1>two_weeks</h1>
+            {{ two_weeks }}
+        {% endif %}
+    {% else %}
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endif %}
+
   <script src="{% static "js/jquery.min.js" %}"></script>
   <script src="{% static "js/bootstrap.min.js" %}"></script>
   {% block js %}{% endblock %}
