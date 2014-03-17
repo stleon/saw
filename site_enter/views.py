@@ -2,6 +2,7 @@ from django.shortcuts import render
 from site_enter.forms.forms import EnterSiteForm
 from django.views.decorators.csrf import csrf_protect
 from site_auditor import SiteAuditor
+from site_auditor.site_auditor import SiteException
 from site_enter.models import Site
 from site_enter.models import SiteBaseInformation
 import datetime
@@ -34,17 +35,21 @@ def home(request):
 	if request.method == 'POST':
 		form = EnterSiteForm(request.POST)
 		if form.is_valid():
-			# TODO: сразу пишет в бд, а сайт может и не пройти валидацию на адрес. Исправить
-			obj, created = Site.objects.get_or_create(site=form.cleaned_data['site'].strip().lower(),)
-			if created:  # если сайта нет вообще, полный скан
-				site = base_inf(obj, 'y')
+			try:
+				site_form = SiteAuditor.clear_site_name(form.cleaned_data['site'].strip().lower())
+			except SiteException as error:
+				messages.add_message(request, messages.ERROR, error)
 			else:
-				if SiteBaseInformation.objects.all().filter(
-						date_created__lt=timezone.now() - datetime.timedelta(days=14), site=obj.id):  # прошло 14 дней, полный скан
+				obj, created = Site.objects.get_or_create(site=site_form,)
+				if created:  # если сайта нет вообще, полный скан
 					site = base_inf(obj, 'y')
-				else:  # не прошло 14 дней, часть из бд, часть из 2w
-					site = Site.objects.get(id=obj.id)
-					two_weeks = SiteAuditor(obj.site, '2w')
+				else:
+					if SiteBaseInformation.objects.all().filter(
+							date_created__lt=timezone.now() - datetime.timedelta(days=14), site=obj.id):  # прошло 14 дней, полный скан
+						site = base_inf(obj, 'y')
+					else:  # не прошло 14 дней, часть из бд, часть из 2w
+						site = Site.objects.get(id=obj.id)
+						two_weeks = SiteAuditor(obj.site, '2w')
 	else:
 		form = EnterSiteForm()
 	return render(request, 'index.html', {'form': form, 'site':site, 'two_weeks':two_weeks,})
